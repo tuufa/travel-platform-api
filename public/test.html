@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест REST API</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+        color: #333;
+    }
+    .form-container {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    h2 {
+        margin-top: 0;
+        color: #2c3e50;
+        font-size: 1.5em;
+    }
+    input, select, textarea {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+    textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+    button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+        font-size: 16px;
+        transition: background-color 0.3s;
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    button.secondary {
+        background-color: #2196F3;
+    }
+    button.secondary:hover {
+        background-color: #0b7dda;
+    }
+    button.danger {
+        background-color: #f44336;
+    }
+    button.danger:hover {
+        background-color: #d32f2f;
+    }
+    #result {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-family: monospace;
+    }
+	.tab {
+		overflow: hidden;
+		border: 1px solid #ccc;
+		background-color: #f1f1f1;
+		border-radius: 5px 5px 0 0;
+	}
+	.tab button {
+		background-color: inherit;
+		float: left;
+		border: none;
+		outline: none;
+		cursor: pointer;
+		padding: 14px 16px;
+		transition: 0.3s;
+		font-size: 16px;
+		color: black;
+	}
+	.tab button:hover {
+		background-color: #ddd;
+		color: black;
+	}
+	.tab button.active {
+		background-color: #fff;
+		font-weight: bold;
+		color: black;
+	}
+    .tabcontent {
+        display: none;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-top: none;
+        border-radius: 0 0 5px 5px;
+        background-color: #fff;
+    }
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        margin-top: 20px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 600px;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+        white-space: nowrap;
+    }
+    th {
+        background-color: #f2f2f2;
+        position: sticky;
+        top: 0;
+        font-weight: bold;
+        color: #333;
+    }
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    tr:hover {
+        background-color: #f1f1f1;
+    }
+    @media (max-width: 768px) {
+        body {
+            padding: 10px;
+        }
+        .form-container {
+            padding: 15px;
+        }
+        .tab button {
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 8px;
+            font-size: 14px;
+        }
+    }
+    .error-message {
+        color: #d32f2f;
+        background-color: #ffebee;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+    .success-message {
+        color: #388e3c;
+        background-color: #e8f5e9;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+    .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 10px;
+    }
+    .form-row input, .form-row select {
+        flex: 1;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+</style>
+</head>
+<body>
+    <h1>Тест REST API</h1>
+
+    <div class="tab">
+        <button class="tablinks active" onclick="openTab(event, 'login')">Вход</button>
+        <button class="tablinks" onclick="openTab(event, 'register')">Регистрация</button>
+		<button class="tablinks" id="preferencesTab" style="display:none;" onclick="openTab(event, 'preferences')">Мои предпочтения</button>
+        <button class="tablinks" id="addRouteTab" style="display:none;" onclick="openTab(event, 'addRoute')">Добавить маршрут</button>
+        <button class="tablinks" id="addPoiTab" style="display:none;" onclick="openTab(event, 'addPoi')">Добавить точку интереса</button>
+        <button class="tablinks" id="addReviewTab" style="display:none;" onclick="openTab(event, 'addReview')">Добавить отзыв</button>
+        <button class="tablinks" id="addCollectionTab" style="display:none;" onclick="openTab(event, 'addCollection')">Добавить коллекцию</button>
+        <button class="tablinks" id="addCollectionRouteTab" style="display:none;" onclick="openTab(event, 'addCollectionRoute')">Добавить в коллекцию</button>
+        <button class="tablinks" id="dbTablesTab" style="display:none;" onclick="openTab(event, 'dbTables')">Просмотр БД</button>
+        <button class="tablinks" id="editDataTab" style="display:none;" onclick="openTab(event, 'editData')">Редактирование</button>
+    </div>
+
+    <div id="login" class="tabcontent" style="display: block;">
+        <div class="form-container">
+            <h2>Форма входа</h2>
+            <input type="text" id="loginEmail" placeholder="Email">
+            <input type="password" id="loginPassword" placeholder="Пароль">
+            <button onclick="login()">Войти</button>
+            <div id="loginResult"></div>
+        </div>
+    </div>
+
+    <div id="register" class="tabcontent">
+        <div class="form-container">
+            <h2>Форма регистрации</h2>
+            <input type="text" id="regEmail" placeholder="Email">
+            <input type="text" id="regUsername" placeholder="Имя пользователя">
+            <input type="password" id="regPassword" placeholder="Пароль">
+            <button onclick="register()">Зарегистрироваться</button>
+            <div id="registerResult"></div>
+        </div>
+    </div>
+
+    <div id="addRoute" class="tabcontent">
+        <div class="form-container">
+            <h2>Добавить новый маршрут</h2>
+            <input type="text" id="routeTitle" placeholder="Название маршрута">
+            <textarea id="routeDescription" placeholder="Описание маршрута"></textarea>
+            <input type="number" id="routeDuration" placeholder="Продолжительность (часы)">
+            <select id="routeDifficulty">
+                <option value="easy">Легкий</option>
+                <option value="medium">Средний</option>
+                <option value="hard">Сложный</option>
+            </select>
+            <input type="text" id="routeRegion" placeholder="Регион">
+            <button onclick="addRoute()">Добавить маршрут</button>
+            <div id="addRouteResult"></div>
+        </div>
+    </div>
+
+	<div id="addPoi" class="tabcontent">
+		<div class="form-container">
+			<h2>Добавить точку интереса</h2>
+			<select id="poiRouteId">
+				<option value="">Выберите маршрут</option>
+			</select>
+			<input type="text" id="poiName" placeholder="Название точки">
+			<textarea id="poiDescription" placeholder="Описание точки"></textarea>
+			<div class="form-row">
+				<input type="number" step="0.00000001" id="poiLatitude" placeholder="Широта">
+				<input type="number" step="0.00000001" id="poiLongitude" placeholder="Долгота">
+			</div>
+			<input type="number" id="poiOrder" placeholder="Порядок в маршруте">
+			<button onclick="addPoi()">Добавить точку интереса</button>
+			<div id="addPoiResult"></div>
+		</div>
+	</div>
+
+	<div id="addReview" class="tabcontent">
+		<div class="form-container">
+			<h2>Добавить отзыв</h2>
+			<select id="reviewRouteId">
+				<option value="">Выберите маршрут</option>
+			</select>
+			<input type="number" min="1" max="5" id="reviewRating" placeholder="Рейтинг (1-5)">
+			<textarea id="reviewComment" placeholder="Комментарий"></textarea>
+			<button onclick="addReview()">Добавить отзыв</button>
+			<div id="addReviewResult"></div>
+		</div>
+	</div>
+
+	<div id="addCollection" class="tabcontent">
+		<div class="form-container">
+			<h2>Добавить коллекцию</h2>
+			<input type="text" id="collectionName" placeholder="Название коллекции">
+			<textarea id="collectionDescription" placeholder="Описание коллекции"></textarea>
+			
+			<label style="display: block; margin: 15px 0;">
+				<input type="checkbox" id="collectionIsPublic"> Публичная коллекция
+			</label>
+			
+			<h3>Добавить маршруты в коллекцию</h3>
+			<select id="collectionRoutes" multiple style="height: 100px; width: 100%; margin-bottom: 15px;">
+				<option value="">Загрузка маршрутов...</option>
+			</select>
+			
+			<button onclick="addCollection()">Добавить коллекцию</button>
+			<div id="addCollectionResult"></div>
+		</div>
+	</div>
+
+	<div id="addCollectionRoute" class="tabcontent">
+		<div class="form-container">
+			<h2>Добавить маршрут в коллекцию</h2>
+			
+			<label>Выберите коллекцию:</label>
+			<select id="collectionNameSelect">
+				<option value="">Загрузка коллекций...</option>
+			</select>
+			
+			<label style="margin-top: 15px;">Выберите маршрут:</label>
+			<select id="routeTitleSelect">
+				<option value="">Загрузка маршрутов...</option>
+			</select>
+			
+			<button onclick="addCollectionRoute()" style="margin-top: 20px;">Добавить в коллекцию</button>
+			<div id="addCollectionRouteResult"></div>
+		</div>
+	</div>
+
+    <div id="dbTables" class="tabcontent">
+        <div class="form-container">
+            <h2>Просмотр данных из БД</h2>
+            <select id="tableSelect">
+                <option value="users">Пользователи</option>
+                <option value="routes">Маршруты</option>
+                <option value="points_of_interest">Точки интереса</option>
+                <option value="reviews">Отзывы</option>
+                <option value="collections">Коллекции</option>
+                <option value="collection_routes">Маршруты в коллекциях</option>
+            </select>
+            <button onclick="loadTableData()" class="secondary">Загрузить данные</button>
+            <div id="tableData"></div>
+        </div>
+    </div>
+
+    <div id="editData" class="tabcontent">
+        <div class="form-container">
+            <h2>Редактирование данных</h2>
+            <select id="editTableSelect" onchange="loadTableForEdit()">
+                <option value="">Выберите таблицу</option>
+                <option value="routes">Маршруты</option>
+                <option value="points_of_interest">Точки интереса</option>
+                <option value="reviews">Отзывы</option>
+                <option value="collections">Коллекции</option>
+            </select>
+            <div id="editTableData"></div>
+        </div>
+    </div>
+	
+	<div id="preferences" class="tabcontent">
+		<div class="form-container">
+			<h2>Мои предпочтения</h2>
+			<div id="preferencesForm">
+				<textarea id="preferencesData" placeholder="Введите ваши предпочтения в формате JSON..." style="width:100%; min-height:200px;"></textarea>
+				<button onclick="savePreferences()">Сохранить предпочтения</button>
+			</div>
+			<div id="preferencesResult"></div>
+		</div>
+	</div>
+
+
+<script>
+    const API_BASE_URL = 'http://localhost:3000/api';
+    let currentToken = null;
+    let currentUserId = null;
+    let currentEditingId = null;
+    let currentEditingTable = null;
+    
+    function openTab(evt, tabName) {
+        const tabcontent = document.getElementsByClassName("tabcontent");
+        for (let i = 0; i < tabcontent.length; i++) 
+		{
+            tabcontent[i].style.display = "none";
+        }
+        
+        const tablinks = document.getElementsByClassName("tablinks");
+        for (let i = 0; i < tablinks.length; i++) 
+		{
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    
+		if (tabName === 'addPoi') {loadRoutesForPoi();}
+
+        if (tabName === 'preferences') {loadPreferences();}
+    
+		if (tabName === 'addReview') {loadRoutesForReview();}
+    
+		if (tabName === 'addCollection') {loadRoutesForCollection();}
+    
+		if (tabName === 'addCollectionRoute') {loadCollections(); loadRoutesForCollection();}
+    }
+
+    function showAuthTabs() {
+        const tabsToHide = ['addRouteTab', 'addPoiTab', 'addReviewTab', 'addCollectionTab', 'addCollectionRouteTab', 'dbTablesTab', 'editDataTab', 'preferencesTab'];
+        tabsToHide.forEach(tabId => { document.getElementById(tabId).style.display = 'none'; });
+    }
+
+    function showAppTabs() {
+        const tabsToShow = ['addRouteTab', 'addPoiTab', 'addReviewTab', 'addCollectionTab', 'addCollectionRouteTab', 'dbTablesTab', 'editDataTab', 'preferencesTab'];
+        tabsToShow.forEach(tabId => { document.getElementById(tabId).style.display = 'block';});
+    }
+
+    async function login() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        try
+		{
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email, password })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok)
+			{
+                currentToken = result.token;
+                currentUserId = result.userId;
+                document.getElementById('loginResult').innerHTML = `<div class="success-message">Успешный вход! Токен сохранен.</div>`;
+                showAppTabs();
+            }
+			else
+			{
+                document.getElementById('loginResult').innerHTML = `<div class="error-message">Ошибка: ${result.error}</div>`;
+                showAuthTabs();
+            }
+        } 
+		catch (error) 
+		{
+            document.getElementById('loginResult').innerHTML = `<div class="error-message">Ошибка сети: ${error.message}</div>`;
+            showAuthTabs();
+        }
+    }
+
+    async function register() {
+        const email = document.getElementById('regEmail').value;
+        const username = document.getElementById('regUsername').value;
+        const password = document.getElementById('regPassword').value;
+        
+        try
+		{
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, username, password })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok)
+			{
+                currentToken = result.token;
+                currentUserId = result.userId;
+                document.getElementById('registerResult').innerHTML = `<div class="success-message">Регистрация успешна! Токен сохранен.</div>`;
+                showAppTabs();
+            } 
+			else
+			{
+                document.getElementById('registerResult').innerHTML = `<div class="error-message">Ошибка: ${result.error}</div>`;
+                showAuthTabs();
+            }
+        }
+		catch (error)
+		{
+            document.getElementById('registerResult').innerHTML = `<div class="error-message">Ошибка сети: ${error.message}</div>`;
+            showAuthTabs();
+        }
+    }
+
+    async function addRoute() {
+        if (!currentToken) 
+		{
+            document.getElementById('addRouteResult').innerHTML = `<div class="error-message">Ошибка: требуется авторизация</div>`;
+            return;
+        }
+
+        const routeData = {
+            title: document.getElementById('routeTitle').value,
+            description: document.getElementById('routeDescription').value,
+            duration_hours: document.getElementById('routeDuration').value,
+            difficulty: document.getElementById('routeDifficulty').value,
+            region: document.getElementById('routeRegion').value
+        };
+        
+        try
+		{
+            const response = await fetch(`${API_BASE_URL}/routes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentToken}` },
+                body: JSON.stringify(routeData)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) 
+			{
+                document.getElementById('addRouteResult').innerHTML = `<div class="success-message">Маршрут успешно добавлен:<br>${JSON.stringify(result, null, 2)}</div>`;
+                document.getElementById('routeTitle').value = '';
+                document.getElementById('routeDescription').value = '';
+                document.getElementById('routeDuration').value = '';
+                document.getElementById('routeRegion').value = '';
+            }
+			else
+			{
+                document.getElementById('addRouteResult').innerHTML = `<div class="error-message">Ошибка: ${result.error}</div>`;
+            }
+        } 
+		catch (error)
+		{
+            document.getElementById('addRouteResult').innerHTML =  `<div class="error-message">Ошибка сети: ${error.message}</div>`;
+        }
+    }
+
+	async function addPoi() {
+		if (!currentToken) 
+		{
+			document.getElementById('addPoiResult').innerHTML = `<div class="error-message">Ошибка: требуется авторизация</div>`;
+			return;
+		}
+
+		const routeId = document.getElementById('poiRouteId').value;
+		if (!routeId)
+		{
+			document.getElementById('addPoiResult').innerHTML = `<div class="error-message">Ошибка: выберите маршрут</div>`;
+			return;
+		}
+
+		const poiData = {
+			name: document.getElementById('poiName').value,
+			description: document.getElementById('poiDescription').value,
+			latitude: document.getElementById('poiLatitude').value,
+			longitude: document.getElementById('poiLongitude').value,
+			order_in_route: document.getElementById('poiOrder').value
+		};
+    
+		try
+		{
+			const response = await fetch(`${API_BASE_URL}/routes/pois`, {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json','Authorization': `Bearer ${currentToken}`},
+				body: JSON.stringify({route_id: routeId, ...poiData})
+			});
+			
+			const result = await response.json();
+			
+			if (response.ok) 
+			{
+				document.getElementById('addPoiResult').innerHTML = `<div class="success-message">Точка интереса успешно добавлена:<br>${JSON.stringify(result, null, 2)}</div>`;
+				document.getElementById('poiName').value = '';
+				document.getElementById('poiDescription').value = '';
+				document.getElementById('poiLatitude').value = '';
+				document.getElementById('poiLongitude').value = '';
+				document.getElementById('poiOrder').value = '';
+			}
+			else
+			{
+				document.getElementById('addPoiResult').innerHTML = `<div class="error-message">Ошибка: ${result.error}</div>`;
+			}
+		} 
+		catch (error) 
+		{
+			document.getElementById('addPoiResult').innerHTML = `<div class="error-message">Ошибка сети: ${error.message}</div>`;
+		}
+	}
+
+	async function addReview() {
+		if (!currentToken) 
+		{
+			document.getElementById('addReviewResult').innerHTML = `<div class="error-message">Ошибка: требуется авторизация</div>`;
+			return;
+		}
+
+		const routeId = document.getElementById('reviewRouteId').value;
+		if (!routeId) 
+		{
+			document.getElementById('addReviewResult').innerHTML = `<div class="error-message">Ошибка: выберите маршрут</div>`;
+			return;
+		}
+
+		const reviewData = {
+			rating: document.getElementById('reviewRating').value,
+			comment: document.getElementById('reviewComment').value
+		};
+		
+		try 
+		{
+			const response = await fetch(`${API_BASE_URL}/routes/reviews`, {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json','Authorization': `Bearer ${currentToken}`},
+				body: JSON.stringify({route_id: routeId, ...reviewData})
+			});
+			
+			const result = await response.json();
+			
+			if (response.ok) 
+			{
+				document.getElementById('addReviewResult').innerHTML = `<div class="success-message">Отзыв успешно добавлен:<br>${JSON.stringify(result, null, 2)}</div>`;
+				document.getElementById('reviewRating').value = '';
+				document.getElementById('reviewComment').value = '';
+			} 
+			else
+			{
+				document.getElementById('addReviewResult').innerHTML = `<div class="error-message">Ошибка: ${result.error}</div>`;
+			}
+		} 
+		catch (error) 
+		{
+			document.getElementById('addReviewResult').innerHTML = `<div class="error-message">Ошибка сети: ${error.message}</div>`;
+		}
+	}
+
+	// Обновленная функция добавления коллекции
+	async function addCollection() {
+		if (!currentToken) 
+		{
+			document.getElementById('addCollectionResult').innerHTML = `<div class="error-message">Ошибка: требуется авторизация</div>`;
+			return;
+		}
+
+		const name = document.getElementById('collectionName').value;
+		if (!name) 
+		{
+			document.getElementById('addCollectionResult').innerHTML = `<div class="error-message">Ошибка: введите название коллекции</div>`;
+			return;
+		}
+
+		const collectionData = {
+			name: name,
+			description: document.getElementById('collectionDescription').value,
+			is_public: document.getElementById('collectionIsPublic').checked,
+			route_ids: Array.from(document.getElementById('collectionRoutes').selectedOptions).map(option => option.value).filter(id => id)
+		};
+		
+		try 
+		{
+			const response = await fetch(`${API_BASE_URL}/routes/collections`, {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json','Authorization': `Bearer ${currentToken}`},
+				body: JSON.stringify(collectionData)
+			});
+			
+			const result = await response.json();
+			
+			if (response.ok) 
+			{
+				document.getElementById('addCollectionResult').innerHTML = `<div class="success-message">Коллекция успешно добавлена:<br>${JSON.stringify(result, null, 2)}</div>`;
+				document.getElementById('collectionName').value = '';
+				document.getElementById('collectionDescription').value = '';
+				document.getElementById('collectionIsPublic').checked = false;
+				document.getElementById('collectionRoutes').selectedIndex = -1;
+			} 
+			else 
+			{
+				document.getElementById('addCollectionResult').innerHTML = `<div class="error-message">Ошибка: ${result.error}</div>`;
+			}
+		}
+		catch (error)
+		{
+			document.getElementById('addCollectionResult').innerHTML = `<div class="error-message">Ошибка сети: ${error.message}</div>`;
+		}
+	}
+
+	async function addCollectionRoute() {
+		if (!currentToken)
+		{
+			document.getElementById('addCollectionRouteResult').innerHTML = `<div class="error-message">Ошибка: требуется авторизация</div>`;
+			return;
+		}
+
+		const collectionName = document.getElementById('collectionNameSelect').value;
+		const routeTitle = document.getElementById('routeTitleSelect').value;
+		
+		if (!collectionName || !routeTitle) 
+		{
+			document.getElementById('addCollectionRouteResult').innerHTML = `<div class="error-message">Ошибка: выберите коллекцию и маршрут</div>`;
+			return;
+		}
+
+		try
+		{
+			const response = await fetch(`${API_BASE_URL}/routes/collection-routes`, {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${currentToken}`},
+				body: JSON.stringify({collection_name: collectionName, route_title: routeTitle})
+			});
+			
+			const result = await response.json();
+			
+			if (response.ok) 
+			{
+				document.getElementById('addCollectionRouteResult').innerHTML = `<div class="success-message">Маршрут "${routeTitle}" успешно добавлен в коллекцию "${collectionName}"</div>`;
+				document.getElementById('collectionNameSelect').value = '';
+				document.getElementById('routeTitleSelect').value = '';
+			} 
+			else 
+			{
+				document.getElementById('addCollectionRouteResult').innerHTML = `<div class="error-message">Ошибка: ${result.error}</div>`;
+			}
+		} 
+		catch (error) 
+		{
+			document.getElementById('addCollectionRouteResult').innerHTML = `<div class="error-message">Ошибка сети: ${error.message}</div>`;
+		}
+	}
+	
+    async function loadTableData() {
+        const tableName = document.getElementById('tableSelect').value;
+        try 
+		{
+            const response = await fetch(`${API_BASE_URL}/routes/db/${tableName}`, { headers: {'Authorization': `Bearer ${currentToken}`}});
+
+            if (!response.ok) 
+			{
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            displayTableData(tableName, data);
+        } 
+		catch (error) 
+		{
+            console.error('Fetch error:', error);
+            document.getElementById('tableData').innerHTML = `
+            <div class="error-message">
+            Ошибка загрузки: ${error.message}<br>
+            Проверьте:<br>
+            1. Авторизацию<br>
+            2. URL API (${API_BASE_URL}/routes/db/${tableName})<br>
+            3. Консоль сервера
+            </div>`;
+        }
+    }
+
+    function displayTableData(tableName, data) {
+        if (!data || data.length === 0) 
+		{
+            document.getElementById('tableData').innerHTML = `<div class="table-responsive"><div class="no-data">Таблица ${tableName} пуста</div></div>`;
+            return;
+        }
+
+        let html = `<div class="table-responsive"><h3>Данные из таблицы ${tableName}</h3>`;
+        html += `<table><tr>`;
+
+        for (const key in data[0]) 
+		{
+            html += `<th>${key}</th>`;
+        }
+        html += `</tr>`;
+
+        data.forEach(row => {
+            html += `<tr>`;
+            for (const key in row) 
+			{
+                html += `<td>${formatCellValue(row[key])}</td>`;
+            }
+            html += `</tr>`;
+        });
+
+        html += `</table></div>`;
+        document.getElementById('tableData').innerHTML = html;
+    }
+
+    async function loadTableForEdit() {
+        const tableName = document.getElementById('editTableSelect').value;
+        if (!tableName) return;
+
+        try
+		{
+            const response = await fetch(`${API_BASE_URL}/routes/db/${tableName}`, { headers: {'Authorization': `Bearer ${currentToken}`}});
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            displayTableForEdit(tableName, data);
+        } 
+		catch (error) 
+		{
+            console.error('Fetch error:', error);
+            document.getElementById('editTableData').innerHTML = `
+            <div class="error-message">
+            Ошибка загрузки: ${error.message}<br>
+            Проверьте:<br>
+            1. Авторизацию<br>
+            2. URL API (${API_BASE_URL}/routes/db/${tableName})<br>
+            3. Консоль сервера
+            </div>`;
+        }
+    }
+
+    function displayTableForEdit(tableName, data) {
+        if (!data || data.length === 0) 
+		{
+            document.getElementById('editTableData').innerHTML = `<div class="table-responsive"><div class="no-data">Таблица ${tableName} пуста</div></div>`;
+            return;
+        }
+
+        let html = `<div class="table-responsive"><h3>Редактирование таблицы ${tableName}</h3>`;
+        html += `<table><tr>`;
+
+        for (const key in data[0]) 
+		{
+            html += `<th>${key}</th>`;
+        }
+        html += `<th>Действия</th></tr>`;
+
+        data.forEach(row => {
+            html += `<tr>`;
+            for (const key in row) 
+			{
+                html += `<td>${formatCellValue(row[key])}</td>`;
+            }
+            html += `<td class="action-buttons"><button onclick="startEdit('${tableName}', ${row.id})" class="secondary">Изменить</button><button onclick="deleteRow('${tableName}', ${row.id})" class="danger">Удалить</button></td></tr>`;
+        });
+
+        html += `</table></div>`;
+        document.getElementById('editTableData').innerHTML = html;
+    }
+
+	async function startEdit(tableName, id) {
+		try 
+		{
+			const endpoint = `${API_BASE_URL}/routes/${tableName}/edit/${id}`;
+			
+			const response = await fetch(endpoint, {headers: {'Authorization': `Bearer ${currentToken}`}});
+
+			if (!response.ok) 
+			{
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const data = await response.json();
+			showEditForm(tableName, id, data);
+		} 
+		catch (error) 
+		{
+			console.error('Fetch error:', error);
+			alert(`Ошибка при загрузке данных для редактирования. Проверьте:\n1. Авторизацию\n2. Доступ к записи\n3. Консоль сервера`);
+		}
+	}
+
+    function showEditForm(tableName, id, data) {
+        currentEditingId = id;
+        currentEditingTable = tableName;
+
+        let formHtml = `<div class="form-container"><h3>Редактирование ${tableName} #${id}</h3>`;
+        
+        for (const [key, value] of Object.entries(data)) 
+		{
+            if (key === 'id' || key === 'created_at' || key === 'updated_at') continue;
+            
+            formHtml += `<label>${key}:</label>`;
+            
+            if (typeof value === 'boolean') 
+			{
+                formHtml += `<input type="checkbox" id="edit-${key}" ${value ? 'checked' : ''}>`;
+            } 
+			else if (key === 'difficulty') 
+			{
+                formHtml += `<select id="edit-${key}"><option value="easy" ${value === 'easy' ? 'selected' : ''}>Легкий</option><option value="medium" ${value === 'medium' ? 'selected' : ''}>Средний</option><option value="hard" ${value === 'hard' ? 'selected' : ''}>Сложный</option></select>`;
+            } 
+			else if (typeof value === 'string' && value.length > 50) 
+			{
+                formHtml += `<textarea id="edit-${key}">${value}</textarea>`;
+            } 
+			else 
+			{
+                formHtml += `<input type="${typeof value === 'number' ? 'number' : 'text'}" id="edit-${key}" value="${value}">`;
+            }
+        }
+
+        formHtml += `<div class="action-buttons"><button onclick="saveEdit()" class="secondary">Сохранить</button><button onclick="cancelEdit()" class="danger">Отмена</button></div></div>`;
+
+        document.getElementById('editTableData').innerHTML = formHtml;
+    }
+
+	async function saveEdit() {
+		if (!currentEditingId || !currentEditingTable) return;
+
+		const updates = {};
+		const inputs = document.querySelectorAll('#editTableData input, #editTableData select, #editTableData textarea');
+		
+		inputs.forEach(input => {
+			const key = input.id.replace('edit-', '');
+			if (input.type === 'checkbox') 
+			{
+				updates[key] = input.checked;
+			} 
+			else 
+			{
+				updates[key] = (input.type === 'number') ? Number(input.value) : input.value;
+			}
+		});
+
+		try 
+		{
+			const endpoint = `${API_BASE_URL}/routes/${currentEditingTable}/${currentEditingId}`;
+			
+			const response = await fetch(endpoint, {
+				method: 'PUT',
+				headers: {'Content-Type': 'application/json','Authorization': `Bearer ${currentToken}`},
+				body: JSON.stringify(updates)
+			});
+
+			if (!response.ok)
+			{
+				const errorData = await response.json();
+				throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+			}
+
+			const result = await response.json();
+			document.getElementById('editTableData').innerHTML = `<div class="success-message">Изменения сохранены успешно!</div>`;
+			setTimeout(() => loadTableForEdit(), 1500);
+		} 
+		catch (error) 
+		{
+			console.error('Update error:', error);
+			document.getElementById('editTableData').innerHTML += `<div class="error-message">Ошибка: ${error.message}</div>`;
+		}
+	}
+
+    function cancelEdit() {loadTableForEdit();}
+
+    async function deleteRow(tableName, id) {
+        if (!confirm(`Вы уверены, что хотите удалить запись с ID ${id} из таблицы ${tableName}?`)) 
+		{
+            return;
+        }
+
+        try
+		{
+            const response = await fetch(`${API_BASE_URL}/${tableName}/${id}`, { method: 'DELETE', headers: {'Authorization': `Bearer ${currentToken}`}});
+
+            if (!response.ok) 
+			{
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            alert(`Запись успешно удалена: ${JSON.stringify(result)}`);
+            loadTableForEdit(); 
+        }
+		catch (error) 
+		{
+            console.error('Delete error:', error);
+            alert(`Ошибка при удалении: ${error.message}`);
+        }
+    }
+
+    function formatCellValue(value) {
+        if (value === null || value === undefined) return 'NULL';
+        if (typeof value === 'object') return JSON.stringify(value);
+        return value;
+    }
+	
+    const defaultPreferences = {
+        "сложность": "medium",
+        "любимые_категории": ["походы", "горы"],
+        "регионы": ["Коми", "Кавказ"]
+    };
+
+    async function loadPreferences() {
+        try 
+		{
+            const response = await fetch(`${API_BASE_URL}/auth/preferences`, { headers: { 'Authorization': `Bearer ${currentToken}` }});
+            
+            if (response.ok) 
+			{
+                const data = await response.json();
+                const prefsToShow = data.preferences || defaultPreferences;
+                document.getElementById('preferencesData').value = JSON.stringify(prefsToShow, null, 2);
+            } 
+			else 
+			{
+                document.getElementById('preferencesData').value = JSON.stringify(defaultPreferences, null, 2);
+            }
+        } 
+		catch (error) 
+		{
+            console.error('Ошибка загрузки:', error);
+            document.getElementById('preferencesData').value = JSON.stringify(defaultPreferences, null, 2);
+        }
+    }
+
+    async function savePreferences() {
+        try
+		{
+            const prefs = JSON.parse(document.getElementById('preferencesData').value);
+            const response = await fetch(`${API_BASE_URL}/auth/preferences`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${currentToken}` },
+                body: JSON.stringify({ preferences: prefs })
+            });
+            const result = await response.json();
+            document.getElementById('preferencesResult').innerHTML = `<div class="success-message">${result.message || 'Предпочтения сохранены!'}</div>`;
+        } 
+		catch (error) 
+		{
+            console.error('Ошибка:', error);
+            document.getElementById('preferencesResult').innerHTML = 
+                `<div class="error-message">Ошибка: введите корректный JSON</div>`;
+        }
+    }
+	
+	async function loadRoutesForPoi() {
+		try
+		{
+			const response = await fetch(`${API_BASE_URL}/routes`);
+			const routes = await response.json();
+        
+			const select = document.getElementById('poiRouteId');
+			select.innerHTML = '<option value="">Выберите маршрут</option>';
+        
+			routes.forEach(route => {
+				const option = document.createElement('option');
+				option.value = route.id;
+				option.textContent = `${route.title} (ID: ${route.id})`;
+				select.appendChild(option);
+			});
+		} 
+		catch (error)
+		{
+			console.error('Ошибка загрузки маршрутов:', error);
+		}
+	}
+	
+	async function loadRoutesForReview() {
+		try
+		{
+			const response = await fetch(`${API_BASE_URL}/routes`);
+			const routes = await response.json();
+			
+			const select = document.getElementById('reviewRouteId');
+			select.innerHTML = '<option value="">Выберите маршрут</option>';
+			
+			routes.forEach(route => {
+				const option = document.createElement('option');
+				option.value = route.id;
+				option.textContent = `${route.title} (ID: ${route.id})`;
+				select.appendChild(option);
+			});
+		} 
+		catch (error)
+		{
+			console.error('Ошибка загрузки маршрутов:', error);
+		}
+	}
+	
+	async function loadRoutesForCollection() {
+		try
+		{
+			const response = await fetch(`${API_BASE_URL}/routes`);
+			const routes = await response.json();
+			
+			const select = document.getElementById('collectionRoutes');
+			select.innerHTML = '';
+			
+			routes.forEach(route => {
+				const option = document.createElement('option');
+				option.value = route.id;
+				option.textContent = `${route.title} (ID: ${route.id})`;
+				select.appendChild(option);
+			});
+		} 
+		catch (error)
+		{
+			console.error('Ошибка загрузки маршрутов:', error);
+			document.getElementById('collectionRoutes').innerHTML = '<option value="">Ошибка загрузки маршрутов</option>';
+		}
+	}
+		
+	// Функции для загрузки данных
+	async function loadCollections() {
+		try
+		{
+			const response = await fetch(`${API_BASE_URL}/routes/db/collections`, {headers: {'Authorization': `Bearer ${currentToken}`}});
+			const collections = await response.json();
+			
+			const select = document.getElementById('collectionNameSelect');
+			select.innerHTML = '<option value="">Выберите коллекцию</option>';
+			
+			collections.forEach(collection => {
+				const option = document.createElement('option');
+				option.value = collection.name;
+				option.textContent = `${collection.name}${collection.is_public ? ' (публичная)' : ''}`;
+				select.appendChild(option);
+			});
+		} 
+		catch (error)
+		{
+			console.error('Ошибка загрузки коллекций:', error);
+			document.getElementById('collectionNameSelect').innerHTML = '<option value="">Ошибка загрузки</option>';
+		}
+	}
+
+	async function loadRoutesForCollection() {
+		try 
+		{
+			const response = await fetch(`${API_BASE_URL}/routes`);
+			const routes = await response.json();
+			
+			const select = document.getElementById('routeTitleSelect');
+			select.innerHTML = '<option value="">Выберите маршрут</option>';
+			
+			routes.forEach(route => {
+				const option = document.createElement('option');
+				option.value = route.title;
+				option.textContent = route.title;
+				select.appendChild(option);
+			});
+		} 
+		catch (error) 
+		{
+			console.error('Ошибка загрузки маршрутов:', error);
+			document.getElementById('routeTitleSelect').innerHTML = '<option value="">Ошибка загрузки</option>';
+		}
+	}
+
+    showAuthTabs();
+</script>
+</body>
+</html>
